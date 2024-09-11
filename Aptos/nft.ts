@@ -5,7 +5,7 @@
  * This example shows how to use the Aptos client to mint and transfer a Digital Asset.
  */
 
-import "dotenv";
+// import "dotenv";
 import { Account, Aptos, AptosConfig, Network, NetworkToNetworkName } from "@aptos-labs/ts-sdk";
 
 const INITIAL_BALANCE = 100_000_000;
