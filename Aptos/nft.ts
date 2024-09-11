@@ -17,23 +17,23 @@ const aptos = new Aptos(config);
 
 const example = async () => {
   console.log(
-    "This example will create and fund Alice and Bob, then Alice account will create a collection and a digital asset in that collection and tranfer it to Bob.",
+    "This example will create and fund Player1 and Player2, then Player1 account will create a collection and a digital asset in that collection and tranfer it to Player2.",
   );
 
-  // Create Alice and Bob accounts
-  const alice = Account.generate();
-  const bob = Account.generate();
+  // Create Player1 and Player2 accounts
+  const Player1 = Account.generate();
+  const Player2 = Account.generate();
 
   console.log("=== Addresses ===\n");
-  console.log(`Alice's address is: ${alice.accountAddress}`);
+  console.log(`Player1's address is: ${Player1.accountAddress}`);
 
   // Fund and create the accounts
   await aptos.fundAccount({
-    accountAddress: alice.accountAddress,
+    accountAddress: Player1.accountAddress,
     amount: INITIAL_BALANCE,
   });
   await aptos.fundAccount({
-    accountAddress: bob.accountAddress,
+    accountAddress: Player2.accountAddress,
     amount: INITIAL_BALANCE,
   });
 
@@ -43,70 +43,70 @@ const example = async () => {
 
   // Create the collection
   const createCollectionTransaction = await aptos.createCollectionTransaction({
-    creator: alice,
+    creator: Player1,
     description: collectionDescription,
     name: collectionName,
     uri: collectionURI,
   });
 
   console.log("\n=== Create the collection ===\n");
-  let committedTxn = await aptos.signAndSubmitTransaction({ signer: alice, transaction: createCollectionTransaction });
+  let committedTxn = await aptos.signAndSubmitTransaction({ signer: Player1, transaction: createCollectionTransaction });
 
   let pendingTxn = await aptos.waitForTransaction({ transactionHash: committedTxn.hash });
 
-  const alicesCollection = await aptos.getCollectionData({
-    creatorAddress: alice.accountAddress,
+  const Player1sCollection = await aptos.getCollectionData({
+    creatorAddress: Player1.accountAddress,
     collectionName,
     minimumLedgerVersion: BigInt(pendingTxn.version),
   });
-  console.log(`Alice's collection: ${JSON.stringify(alicesCollection, null, 4)}`);
+  console.log(`Player1's collection: ${JSON.stringify(Player1sCollection, null, 4)}`);
 
   const tokenName = "Example Asset";
   const tokenDescription = "Example asset description.";
   const tokenURI = "aptos.dev/asset";
 
-  console.log("\n=== Alice Mints the digital asset ===\n");
+  console.log("\n=== Player1 Mints the digital asset ===\n");
 
   const mintTokenTransaction = await aptos.mintDigitalAssetTransaction({
-    creator: alice,
+    creator: Player1,
     collection: collectionName,
     description: tokenDescription,
     name: tokenName,
     uri: tokenURI,
   });
 
-  committedTxn = await aptos.signAndSubmitTransaction({ signer: alice, transaction: mintTokenTransaction });
+  committedTxn = await aptos.signAndSubmitTransaction({ signer: Player1, transaction: mintTokenTransaction });
   pendingTxn = await aptos.waitForTransaction({ transactionHash: committedTxn.hash });
 
-  const alicesDigitalAsset = await aptos.getOwnedDigitalAssets({
-    ownerAddress: alice.accountAddress,
+  const Player1sDigitalAsset = await aptos.getOwnedDigitalAssets({
+    ownerAddress: Player1.accountAddress,
     minimumLedgerVersion: BigInt(pendingTxn.version),
   });
-  console.log(`Alice's digital assets balance: ${alicesDigitalAsset.length}`);
+  console.log(`Player1's digital assets balance: ${Player1sDigitalAsset.length}`);
 
-  console.log(`Alice's digital asset: ${JSON.stringify(alicesDigitalAsset[0], null, 4)}`);
+  console.log(`Player1's digital asset: ${JSON.stringify(Player1sDigitalAsset[0], null, 4)}`);
 
-  console.log("\n=== Transfer the digital asset to Bob ===\n");
+  console.log("\n=== Transfer the digital asset to Player2 ===\n");
 
   const transferTransaction = await aptos.transferDigitalAssetTransaction({
-    sender: alice,
-    digitalAssetAddress: alicesDigitalAsset[0].token_data_id,
-    recipient: bob.accountAddress,
+    sender: Player1,
+    digitalAssetAddress: Player1sDigitalAsset[0].token_data_id,
+    recipient: Player2.accountAddress,
   });
-  committedTxn = await aptos.signAndSubmitTransaction({ signer: alice, transaction: transferTransaction });
+  committedTxn = await aptos.signAndSubmitTransaction({ signer: Player1, transaction: transferTransaction });
   pendingTxn = await aptos.waitForTransaction({ transactionHash: committedTxn.hash });
 
-  const alicesDigitalAssetsAfter = await aptos.getOwnedDigitalAssets({
-    ownerAddress: alice.accountAddress,
+  const Player1sDigitalAssetsAfter = await aptos.getOwnedDigitalAssets({
+    ownerAddress: Player1.accountAddress,
     minimumLedgerVersion: BigInt(pendingTxn.version),
   });
-  console.log(`Alices's digital assets balance: ${alicesDigitalAssetsAfter.length}`);
+  console.log(`Player1s's digital assets balance: ${Player1sDigitalAssetsAfter.length}`);
 
-  const bobDigitalAssetsAfter = await aptos.getOwnedDigitalAssets({
-    ownerAddress: bob.accountAddress,
+  const Player2DigitalAssetsAfter = await aptos.getOwnedDigitalAssets({
+    ownerAddress: Player2.accountAddress,
     minimumLedgerVersion: BigInt(pendingTxn.version),
   });
-  console.log(`Bob's digital assets balance: ${bobDigitalAssetsAfter.length}`);
+  console.log(`Player2's digital assets balance: ${Player2DigitalAssetsAfter.length}`);
 };
 
 example();
