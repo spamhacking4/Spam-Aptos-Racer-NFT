@@ -1,0 +1,2 @@
+npx tsc nft.ts
+node nft.js
